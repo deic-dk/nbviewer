@@ -41,9 +41,9 @@ spec:
       - args:
         env:
         - name: GITHUB_OAUTH_KEY
-          value: "63b7cfe34d3947bf0dad"
+          value: ""
         - name: GITHUB_OAUTH_SECRET
-          value: "685f9595f17cdc3dcb7ad3d6ed09866f2b491529"
+          value: ""
         - name: MEMCACHIER_SERVERS
           value: nbcache:11211
         image: sciencedata/nbviewer_sciencedata:latest
