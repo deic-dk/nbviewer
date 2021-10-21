@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nbviewer
+  labels:
+    app: jupyter
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  selector:
+    jupyter-service-name: nbviewer
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    jupyter-service-name: nbviewer
+  name: nbviewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      jupyter-service-name: nbviewer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        jupyter-service-name: nbviewer
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+        fsGroupChangePolicy: Always
+      containers:
+      - args:
+        env:
+        - name: GITHUB_OAUTH_KEY
+          value: "63b7cfe34d3947bf0dad"
+        - name: GITHUB_OAUTH_SECRET
+          value: "685f9595f17cdc3dcb7ad3d6ed09866f2b491529"
+        - name: MEMCACHIER_SERVERS
+          value: nbcache:11211
+        image: sciencedata/nbviewer_sciencedata:latest
+        name: nbviewer
+        securityContext:
+          capabilities:
+            add: ["SYS_CHROOT"] 
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+      restartPolicy: Always
+      nodeName: worker1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nbcache
+  labels:
+    app: memcached
+spec:
+  ports:
+  - name: "11211"
+    port: 11211
+    targetPort: 11211
+  selector:
+    jupyter-service-name: nbcache
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    jupyter-service-name: nbcache
+  name: nbcache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      jupyter-service-name: nbcache
+  template:
+    metadata:
+      labels:
+        jupyter-service-name: nbcache
+    spec:
+      containers:
+      - image: memcached
+        name: nbcache
+        ports:
+        - containerPort: 11211
+          protocol: TCP
+      restartPolicy: Always
+
