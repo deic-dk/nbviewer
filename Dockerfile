@@ -1,3 +1,10 @@
+# nbviewer for use on the ScienceData infrastructure.
+# Build with
+# docker build -t sciencedata/nbviewer_sciencedata .
+# push with
+# docker push sciencedata/nbviewer_sciencedata
+#
+
 # Define a builder image
 FROM python:3.7-buster as builder
 
