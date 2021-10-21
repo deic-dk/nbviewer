@@ -24,8 +24,15 @@ RUN python3 setup.py build && \
     python3 -mpip wheel -vv . -w /wheels
 
 # Now define the runtime image
-FROM python:3.7-slim-buster
-LABEL maintainer="Jupyter Project <jupyter@googlegroups.com>"
+FROM python:3.7-buster
+LABEL maintainer="ScienceData Project <cloud@deic.dk>"
+LABEL vendor="sciencedata.dk"
+LABEL version="1.0"
+LABEL description="Debian/Python for deployment/integration of Jupyter nbviewer on sciencedata.dk"
+
+ARG NB_USER="sciencedata"
+ARG NB_UID="1000"
+ARG NB_GID="100"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
@@ -35,18 +42,37 @@ RUN apt-get update \
     ca-certificates \
     libcurl4 \
     git \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-utils rsyslog openssh-client net-tools inetutils-tools curl \
+    psmisc vim pciutils dkms vlan unicode-data gnupg git cron \
+    apt-transport-https wget jq nfs-common iputils-ping traceroute sudo \
+    # Slim down image
+    && apt-get clean autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/{apt,dpkg}/ \
+    && rm -rf /usr/share/man/* /usr/share/groff/* /usr/share/info/* \
+    && find /usr/share/doc -depth -type f ! -name copyright -delete \
+    && rm -rf /var/lib/apt/lists/*
 
 
 COPY --from=builder /wheels /wheels
 RUN python3 -mpip install --no-cache /wheels/*
+
+RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su && \
+    sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers && \
+    sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers && \
+    useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+    chmod g+w /etc/passwd
+
+RUN echo "$NB_USER:secret" | chpasswd
+RUN echo "$NB_USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$NB_USER && chmod 0440 /etc/sudoers.d/$NB_USER
 
 # To change the number of threads use
 # docker run -d -e NBVIEWER_THREADS=4 -p 80:8080 nbviewer
 ENV NBVIEWER_THREADS 2
 WORKDIR /srv/nbviewer
 EXPOSE 8080
-USER nobody
+#USER nobody
+USER $NB_USER
 
 EXPOSE 9000
 CMD ["python", "-m", "nbviewer", "--port=8080"]
