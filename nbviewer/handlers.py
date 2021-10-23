@@ -61,9 +61,23 @@ class CreateHandler(BaseHandler):
     uri_rewrite_list = None
 
     def post(self):
-        value = self.get_argument("gistnorurl", "")
-        redirect_url = transform_ipynb_uri(value, self.get_provider_rewrites())
-        self.log.info("create %s => %s", value, redirect_url)
+        # curl -X POST -F "nb=@notebook.ipynb" https://localhost:5000/create/
+        if self.request.files.get('nb', None):
+            import uuid
+            uploadFile = self.request.files['nb'][0]
+            filename = uuid.uuid4().hex + uploadFile['filename']
+            self.log.info("nb %s", filename)
+            localfile_path = self.settings.get("localfile_path", "")
+            filepath = localfile_path+"/"+filename
+            fileObj = open(filepath, 'wb')
+            fileObj.write(uploadFile['body'])
+            self.log.info("notebook %s", filepath)
+            redirect_url = "/localfile/"+filename
+        else:
+            value = self.get_argument("gistnorurl", "")
+            redirect_url = transform_ipynb_uri(value, self.get_provider_rewrites())
+            self.log.info("gistnorurl %s", value)
+        self.log.info("create %s", redirect_url)
         self.redirect(url_path_join(self.base_url, redirect_url))
 
     def get_provider_rewrites(self):

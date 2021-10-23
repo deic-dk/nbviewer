@@ -33,9 +33,9 @@ spec:
         jupyter-service-name: nbviewer
     spec:
       securityContext:
-        runAsUser: 0
-        runAsGroup: 0
-        fsGroup: 0
+        runAsUser: 1000
+        runAsGroup: 100
+        fsGroup: 100
         fsGroupChangePolicy: Always
       containers:
       - args:

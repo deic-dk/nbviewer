@@ -152,6 +152,8 @@ class LocalFileHandler(RenderingHandler):
         try:
             with io.open(fullpath, encoding="utf-8") as f:
                 nbdata = f.read()
+                # Remove file after delivering
+                os.remove(fullpath)
         except IOError as ex:
             if ex.errno == errno.EACCES:
                 # py3: can't read the file, so don't give away it exists
@@ -168,11 +170,13 @@ class LocalFileHandler(RenderingHandler):
         #     Title to use as the HTML page title (i.e., text on the browser tab)
         await self.finish_notebook(
             nbdata,
-            download_url="?download",
-            msg="file from localfile: %s" % path,
+            download_url="",# "?download",
+            msg="",# "file from localfile: %s" % path,
             public=False,
-            breadcrumbs=self.breadcrumbs(path),
+            breadcrumbs=[],# self.breadcrumbs(path),
             title=os.path.basename(path),
+            # Suppress header in template notebook.html
+            noheader=True,
         )
 
     @cached
@@ -233,7 +237,11 @@ class LocalFileHandler(RenderingHandler):
         entries = []
         dirs = []
         ipynbs = []
-
+        ####
+        # Just disable directory listing
+        ####
+        raise web.HTTPError(404)
+        ####
         try:
             contents = os.listdir(fullpath)
         except IOError as ex:

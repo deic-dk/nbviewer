@@ -2,9 +2,8 @@
 
 {% import "layout.html" as layout with context %}
 
-
 {% block otherlinks %}
-  {% for fmt_name, fmt in formats.items() %}
+  <!--{% for fmt_name, fmt in formats.items() %}
     {% if format != fmt_name %}
       {% if fmt_name == default_format %}
         {{ layout.head_icon(from_base(format_base), "View as " ~ fmt.label, fmt.icon) }}
@@ -25,7 +24,7 @@
   {% if executor_url %}
     {{ layout.head_icon(executor_url, "Execute on " + executor_label, executor_icon) }}
   {% endif %}
-
+-->
   {{ layout.head_icon(download_url, "Download Notebook", "download", True) }}
 {% endblock %}
 
@@ -111,7 +110,6 @@
     </script>
   {% endblock ipywidgets %}
 {% endblock extra_head %}
-
 
 {% block body %}
   {{ link_breadcrumbs(breadcrumbs) }}

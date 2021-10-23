@@ -77,6 +77,7 @@
   <script src="{{ static_url("components/jquery/dist/jquery.min.js") }}"></script>
   <script src="{{ static_url("components/requirejs/require.js") }}"></script>
   <script src="{{ static_url("components/moment/min/moment.min.js") }}"></script>
+{% if not noheader %}
 <!-- Navbar
 ================================================== -->
   <nav id="menubar" class="navbar navbar-default navbar-fixed-top" data-spy="affix">
@@ -93,11 +94,11 @@
 
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
-          <li>
+          <!--<li>
             <a class="active" href="http://jupyter.org">JUPYTER</a>
           </li>
           {{ head_text(from_base('/faq'), "FAQ") }}
-
+          -->
           {% block otherlinks %}
             {% if provider_url %}
               {{ head_icon(provider_url, "View on " + provider_label, provider_icon) }}
@@ -112,12 +113,13 @@
       {% endblock %}
     </div>
   </nav>
+{% endif %}
 
   {% block container %}<div class="container container-main">
     {% block body %}{% endblock %}
   </div>{% endblock container %}
 
-
+{% if not noheader %}
   {% block footer %}
     <footer class="footer hidden-print">
       <div class="container">
@@ -154,6 +156,7 @@
       </div>
     </footer>
   {% endblock footer %}
+{% endif %}
 
   <script src="{{ static_url("components/bootstrap/js/bootstrap.min.js") }}"></script>
   <script src="{{ static_url("components/headroom.js/dist/headroom.min.js") }}"></script>
