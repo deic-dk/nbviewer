@@ -152,8 +152,8 @@ class LocalFileHandler(RenderingHandler):
         try:
             with io.open(fullpath, encoding="utf-8") as f:
                 nbdata = f.read()
-                # Remove file after delivering
-                os.remove(fullpath)
+            # Remove file after delivering
+            os.remove(fullpath)
         except IOError as ex:
             if ex.errno == errno.EACCES:
                 # py3: can't read the file, so don't give away it exists
