@@ -50,6 +50,8 @@ from .utils import git_info
 from .utils import jupyter_info
 from .utils import url_path_join
 
+import requests
+
 try:  # Python 3.8
     from functools import cached_property
 except ImportError:
@@ -204,6 +206,10 @@ class NBViewer(Application):
     url_handler = Unicode(
         default_value="nbviewer.providers.url.handlers.URLHandler",
         help="The Tornado handler to use for viewing notebooks accessed via URL",
+    ).tag(config=True)
+    url_tree_handler = Unicode(
+        default_value="nbviewer.providers.url.handlers.WebDavTreeHandler",
+        help="The Tornado handler to use for viewing WebDAV directory trees",
     ).tag(config=True)
     user_gists_handler = Unicode(
         default_value="nbviewer.providers.gist.handlers.UserGistsHandler",
@@ -510,17 +516,18 @@ class NBViewer(Application):
     def formats(self):
         return self.configure_formats()
 
-    # load frontpage sections
+    # load frontpage sections - from ScienceData
     @cached_property
     def frontpage_setup(self):
-        with io.open(self.frontpage, "r") as f:
-            frontpage_setup = json.load(f)
+        #with io.open(self.frontpage, "r") as f:
+            #frontpage_setup = json.load(f)
+        frontpage_setup = requests.get("https://sciencedata.dk/remote.php/notebooks").json()
         # check if the JSON has a 'sections' field, otherwise assume it is just a list of sessions,
         # and provide the defaults of the other fields
         if "sections" not in frontpage_setup:
             frontpage_setup = {
-                "title": "nbviewer",
-                "subtitle": "A simple way to share Jupyter notebooks",
+                "title": "ScienceNotebooks",
+                "subtitle": "Scientific Jupyter notebooks - shared",
                 "show_input": True,
                 "sections": frontpage_setup,
             }
@@ -626,6 +633,7 @@ class NBViewer(Application):
             index_handler=self.index_handler,
             local_handler=self.local_handler,
             url_handler=self.url_handler,
+            url_tree_handler=self.url_tree_handler,
             user_gists_handler=self.user_gists_handler,
         )
         handler_kwargs = {

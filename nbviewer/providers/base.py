@@ -298,15 +298,15 @@ class BaseHandler(web.RequestHandler):
     def static_url(self, url):
         return url_path_join(self.static_url_prefix, url)
 
-    def breadcrumbs(self, path, base_url):
+    def breadcrumbs(self, path, url, base_url_query=""):
         """Generate a list of breadcrumbs"""
         breadcrumbs = []
         if not path:
             return breadcrumbs
 
         for name in path.split("/"):
-            base_url = url_path_join(base_url, name)
-            breadcrumbs.append({"url": base_url, "name": name})
+            url = url_path_join(url, name)+"/"+base_url_query
+            breadcrumbs.append({"url": url, "name": name})
         return breadcrumbs
 
     def get_page_links(self, response):

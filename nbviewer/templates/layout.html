@@ -37,7 +37,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>{{title|default("Jupyter Notebook Viewer", true)}}</title>
+  <title>{{title|default("ScienceNotebooks", true)}}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{{ description | default('') }}">
   <meta name="author" content="{{ author | default('') }}">
@@ -125,18 +125,13 @@
       <div class="container">
         <div class="col-md-4">
           <p>
-            This website does not host notebooks, it only renders notebooks
-            available on other websites.
+            This website irenders Jupyter notebooks hosted on <a href="https://sciencedata.dk/">ScienceData</a>.
           </p>
         </div>
 
         <div class="col-md-4">
           <p>
-            Delivered by <a href="http://www.fastly.com/">Fastly</a>,
-            Rendered by <a href="https://ovhcloud.com">OVHcloud</a>
-          </p>
-          <p>
-            nbviewer GitHub <a href="https://github.com/jupyter/nbviewer">repository</a>.
+            Everyone is welcome to <a href="https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks">contribute</a>.
           </p>
         </div>
 
@@ -144,7 +139,8 @@
           {% block version_info %}
             {% if git_data %}
               <p>
-                nbviewer version:
+                Powered by <a href="https://github.com/jupyter/nbviewer">NBViewer</a>.
+                Version
                 <a href="https://github.com/jupyter/nbviewer/commit/{{git_data['sha']}}">
                   {{git_data['sha'][:7]}}
                 </a>
