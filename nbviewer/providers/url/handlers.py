@@ -23,6 +23,8 @@ from webdav3.exceptions import RemoteResourceNotFound
 
 import os
 import sys
+import re
+import urllib.parse
 
 class URLHandler(RenderingHandler):
     """Renderer for /url or /urls"""
@@ -72,8 +74,10 @@ class URLHandler(RenderingHandler):
 
         return remote_url, public
 
-    async def deliver_notebook(self, remote_url, public):
-        response = await self.fetch(remote_url)
+    async def deliver_notebook(self, remote_url, public, url):
+
+        bare_url = re.sub(r'\?.*$', '', remote_url)
+        response = await self.fetch(bare_url)
 
         try:
             nbjson = response_text(response, encoding="utf-8")
@@ -81,9 +85,18 @@ class URLHandler(RenderingHandler):
             self.log.error("Notebook is not utf8: %s", remote_url, exc_info=True)
             raise web.HTTPError(400)
 
+        # https://sciencedata.dk/public/9e48cffd2f1fa3fada752877f490d5d1/sddk.ipynb
+        # https://sciencedata.dk/shared/9e48cffd2f1fa3fada752877f490d5d1?files=sddk.ipynb&download
+        self.log.warn("remote_url: %s", remote_url, exc_info=True)
+        download_url = re.sub(r'/public/([^/]+)/(.+\.ipynb)\?*.*$', r'/shared/\1?files=\2&download', remote_url)
+        webdav_url = re.sub(r'(\.ipynb)\?*.*$', r'\1', urllib.parse.unquote(remote_url))
+        import_url = 'https://sciencedata.dk/index.php/apps/importer/importer.php?url='+urllib.parse.quote(webdav_url, safe="")
+        close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)
         await self.finish_notebook(
             nbjson,
-            download_url=remote_url,
+            download_url=download_url,
+            import_url=import_url,
+            close_url=close_url,
             msg="file from url: %s" % remote_url,
             public=public,
             request=self.request,
@@ -92,7 +105,7 @@ class URLHandler(RenderingHandler):
     #@cached
     async def get(self, secure, netloc, url):
         remote_url, public = await self.get_notebook_data(secure, netloc, url)
-        await self.deliver_notebook(remote_url, public)
+        await self.deliver_notebook(remote_url, public, url)
 
 class WebDavTreeHandler(BaseHandler):
     """list files in a webdav directory"""
@@ -128,6 +141,7 @@ class WebDavTreeHandler(BaseHandler):
         else:
             query = ""
 
+        query_str = ""
         if query:
             query_str = "&"+query
             if "&base_url=" in query_str:
@@ -153,6 +167,7 @@ class WebDavTreeHandler(BaseHandler):
             base_url_query = "base_url="+base_url
         else:
             base_url_query = ""
+            query_str = query_str.strip("&")
 
         base_url_full = u"/url{secure}/{netloc}/{base_url}".format(secure=secure, netloc=netloc, base_url=base_url.lstrip("/"))
         path = ("/"+url).replace(base_url, "", 1)
@@ -169,19 +184,23 @@ class WebDavTreeHandler(BaseHandler):
             name = os.path.basename(file["path"].strip("/"))
             e["name"] = name
             if file["isdir"]:
-                e["url"] = u"/url{secure}/{netloc}/{url}{name}/?{base_url_query}{query}".format(
-                    secure=secure, netloc=netloc, url=url, name=name, base_url_query=base_url_query, query=query
+                e["url"] = u"/url{secure}/{netloc}/{url}{name}/?{base_url_query}{query_str}".format(
+                    secure=secure, netloc=netloc, url=url, name=name, base_url_query=base_url_query, query_str=query_str
                 )
                 e["class"] = "fa-folder-open"
                 dirs.append(e)
             elif file["path"].endswith(".ipynb"):
-                e["url"] = u"/url{secure}/{netloc}/{url}{name}?{base_url_query}{query}".format(
-                    secure=secure, netloc=netloc, url=url, name=name, base_url_query=base_url_query, query=query
+                if query:
+                    query = "?"+query[1:]
+                e["url"] = u"/url{secure}/{netloc}/{url}{name}?{base_url_query}{query_str}".format(
+                    secure=secure, netloc=netloc, url=url, name=name, base_url_query=base_url_query, query_str=query_str
                 )
                 e["class"] = "fa-book"
                 ipynbs.append(e)
             else:
-                e["url"] = ""
+                e["url"] = u"{remote_url}{url}{name}".format(
+                    remote_url=remote_url, url=url, name=name
+                )
                 e["class"] = "fa-share"
                 others.append(e)
 

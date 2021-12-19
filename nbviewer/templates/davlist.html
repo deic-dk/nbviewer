@@ -9,29 +9,40 @@
       <tr><th>Name</th></tr>
     </thead>
     <tbody>
+      {% if len(breadcrumbs) > 1 %}
       <tr>
         <td>
-          {% if len(breadcrumbs) > 1 %}
             <a href="../">
               <i class="fa fa-backward fa-fw"></i> ..
             </a>
-          {% endif %}
         </td>
       </tr>
+      {% endif %}
       {% for entry in entries %}
+        {% if entry.url or entry.name %}
         <tr>
           <td>
-            {% if entry.url %}
-              <a href="{{ from_base(entry.url) }}">
-            {% endif %}
+              {% if entry.class == "fa-share" %}
+                  <a href="{{ from_base(entry.url) }}" download>
+              {% else %}
+                  <a href="{{ from_base(entry.url) }}">
+              {% endif %}
               <i class="fa fa-fw {{entry.class}}"></i>
               {{entry.name}}
-            {% if entry.url %}
               </a>
-            {% endif %}
           </td>
         </tr>
+        {% endif %}
       {% endfor %}
     </tbody>
   </table>
+  <script>
+  	if($('ol.breadcrumb li').length>1){
+      $('a[href="../"]').attr('href', "../"+location.search);
+    }
+    var urlParams = new URLSearchParams(location.search);
+    $('ol.breadcrumb li a').first().text(urlParams.get('base_name'));
+    var newUrl = $('ol.breadcrumb li a').first().attr('href')+location.search;
+    $('ol.breadcrumb li a').first().attr('href', newUrl)
+  </script>
 {% endblock %}

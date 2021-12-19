@@ -177,6 +177,7 @@ class LocalFileHandler(RenderingHandler):
             title=os.path.basename(path),
             # Suppress header in template notebook.html
             noheader=True,
+            nofooter=True
         )
 
     @cached

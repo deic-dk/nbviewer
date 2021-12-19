@@ -252,7 +252,7 @@ class NBViewer(Application):
     ).tag(config=True)
 
     content_security_policy = Unicode(
-        default_value="connect-src 'none';",
+        default_value="connect-src 'self' https://sciencedata.dk https://*.sciencedata.dk;",
         help="Content-Security-Policy header setting.",
     ).tag(config=True)
 
@@ -519,8 +519,6 @@ class NBViewer(Application):
     # load frontpage sections - from ScienceData
     @cached_property
     def frontpage_setup(self):
-        #with io.open(self.frontpage, "r") as f:
-            #frontpage_setup = json.load(f)
         frontpage_setup = requests.get("https://sciencedata.dk/remote.php/notebooks").json()
         # check if the JSON has a 'sections' field, otherwise assume it is just a list of sessions,
         # and provide the defaults of the other fields

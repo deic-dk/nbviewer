@@ -11,7 +11,7 @@
 
 {% macro head_icon(url, name, icon, download=False) -%}
   <li>
-    <a href="{{ from_base(url) }}" title="{{name}}" {%if download %}download{% endif %}>
+    <a href="{{ from_base(url) }}" title="{{name}}" {% if download %} download {% endif %}>
       <span class="fa fa-{{icon}} fa-2x menu-icon"></span>
       <span class="menu-text">{{name}}</span>
     </a>
@@ -70,7 +70,11 @@
   {% block extra_head %}{% endblock %}
 </head>
 
+{% if noheader %}
+<body class="nbviewer noheader">
+{% else %}
 <body class="nbviewer">
+{% endif %}
 
   <!-- These are loaded at the top of the body so they are available to
        notebook cells when they are loaded below. -->
@@ -88,17 +92,15 @@
           <i class="fa fa-bars"></i>
         </button>
         <a class="navbar-brand" href="{{ from_base('/') }}">
-          <img src="{{ static_url("img/nav_logo.svg") }}" width="159"/>
+          <img src="{{ static_url("img/science_notebooks.png") }}" height="48px"/>
         </a>
       </div>
 
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
-          <!--<li>
-            <a class="active" href="http://jupyter.org">JUPYTER</a>
+          <li>
+            <a class="active" href="https://sciencedata.dk/sites/developer/Notebooks/index#publishing_notebooks">About</a>
           </li>
-          {{ head_text(from_base('/faq'), "FAQ") }}
-          -->
           {% block otherlinks %}
             {% if provider_url %}
               {{ head_icon(provider_url, "View on " + provider_label, provider_icon) }}
@@ -119,13 +121,13 @@
     {% block body %}{% endblock %}
   </div>{% endblock container %}
 
-{% if not noheader %}
+{% if ( not noheader or title ) and not nofooter %}
   {% block footer %}
     <footer class="footer hidden-print">
       <div class="container">
         <div class="col-md-4">
           <p>
-            This website irenders Jupyter notebooks hosted on <a href="https://sciencedata.dk/">ScienceData</a>.
+            This website renders Jupyter notebooks hosted on <a href="https://sciencedata.dk/">ScienceData</a>.
           </p>
         </div>
 

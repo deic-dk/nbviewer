@@ -25,7 +25,9 @@
     {{ layout.head_icon(executor_url, "Execute on " + executor_label, executor_icon) }}
   {% endif %}
 -->
-  {{ layout.head_icon(download_url, "Download Notebook", "download", True) }}
+  {{ layout.head_icon(download_url, "Download notebook to your local hard drive", "download", True) }}
+  {{ layout.head_icon(import_url, "Import notebook to your ScienceData", "cloud-download", False) }}
+  {{ layout.head_icon(close_url, "Close notebook", "window-close", False) }}
 {% endblock %}
 
 

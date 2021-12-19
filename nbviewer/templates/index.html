@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block body %}
-  {% if title or subtitle or text or show_input %}
+  {% if title or image or subtitle or text or show_input %}
   <header class="jumbotron masthead">
-    {% if title %}<h1>{{ title }}</h1>{% endif %}
+    {% if title and not image %}<h1>{{ title}}</h1>{% endif %}
+    {% if image %}<h1>{{ image | safe }}</h1>{% endif %}
     {% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}
     {% if text %}
     {{ text | markdown | safe }}
@@ -39,9 +40,11 @@
         <ul class="thumbnails example-sites">
           {% for link in section.links %}
             <li class="col-md-4">
-              <p class="marketing-byline">{{link.text}}</p>
-              <a class="thumbnail" href="{{ from_base(link.target) }}" target="_blank">
-                <img src="{{ static_url(link.img) }}" />
+              <p class="marketing-byline" url="{{ from_base(link.url) }}" type={{link.type}}>{{link.text}}</p>
+              <a class="thumbnail" href="{{ from_base(link.target) }}">
+               <object data="{{ link.img }}" type="image/png" height="96px">
+                  <img src="{{ static_url("/img/folder-o.png") }}" height="96px" />
+                </object>
               </a>
             </li>
           {% endfor %}
@@ -49,5 +52,19 @@
       </div>
     </section>
   {% endfor %}
+
+  <style>
+    .thumbnail {
+      text-align: center;
+    }
+  </style>
+
+  <script>
+  $('.marketing-byline[type="folder"]').each(function(){
+    var target = $(this).attr('url');
+    var textUrl = target+"description.txt";
+    $(this).load(textUrl);
+  });
+  </script>
 
 {% endblock body %}
