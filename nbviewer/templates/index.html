@@ -5,7 +5,7 @@
   <header class="jumbotron masthead">
     {% if title and not image %}<h1>{{ title}}</h1>{% endif %}
     {% if image %}<h1>{{ image | safe }}</h1>{% endif %}
-    {% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}
+    {% if subtitle %}<h2>{{ subtitle | safe }}</h2>{% endif %}
     {% if text %}
     {{ text | markdown | safe }}
     {% endif %}
