@@ -89,9 +89,9 @@ class URLHandler(RenderingHandler):
         # https://sciencedata.dk/shared/9e48cffd2f1fa3fada752877f490d5d1?files=sddk.ipynb&download
         self.log.warn("remote_url: %s", remote_url, exc_info=True)
         download_url = re.sub(r'/public/([^/]+)/(.+\.ipynb)\?*.*$', r'/shared/\1?files=\2&download', remote_url)
-        webdav_url = re.sub(r'(\.ipynb)\?*.*$', r'\1', urllib.parse.unquote(remote_url))
-        import_url = 'https://sciencedata.dk/index.php/apps/importer/importer.php?url='+urllib.parse.quote(webdav_url, safe="")
-        close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)
+        webdav_url = re.sub(r'(\.ipynb)\?*.*$', r'\1', remote_url)
+        import_url = 'https://sciencedata.dk/index.php/apps/importer/importer.php?url='+urllib.parse.quote(urllib.parse.quote(webdav_url, safe="/:#?"), safe="")
+        close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)+'&noindex=true'
         await self.finish_notebook(
             nbjson,
             download_url=download_url,
@@ -102,7 +102,7 @@ class URLHandler(RenderingHandler):
             request=self.request,
         )
 
-    #@cached
+    @cached
     async def get(self, secure, netloc, url):
         remote_url, public = await self.get_notebook_data(secure, netloc, url)
         await self.deliver_notebook(remote_url, public, url)
@@ -129,7 +129,7 @@ class WebDavTreeHandler(BaseHandler):
             **namespace
         )
 
-    #@cached
+    @cached
     async def get(self, secure, netloc, url):
         proto = "http" + secure
         netloc = url_unescape(netloc)
@@ -172,8 +172,9 @@ class WebDavTreeHandler(BaseHandler):
         base_url_full = u"/url{secure}/{netloc}/{base_url}".format(secure=secure, netloc=netloc, base_url=base_url.lstrip("/"))
         path = ("/"+url).replace(base_url, "", 1)
         dir_path = path.rsplit("/", 1)[0]
+        base_url_full_stripped = re.sub(r'\?.*$', '', base_url_full)
         breadcrumbs = [{"url": base_url_full, "name": netloc}]
-        breadcrumbs.extend(self.breadcrumbs(dir_path, base_url_full, "?"+query))
+        breadcrumbs.extend(self.breadcrumbs(dir_path, base_url_full_stripped, "?"+re.sub(r'&noindex=true', '', query)))
 
         entries = []
         dirs = []
@@ -184,6 +185,7 @@ class WebDavTreeHandler(BaseHandler):
             name = os.path.basename(file["path"].strip("/"))
             e["name"] = name
             if file["isdir"]:
+                query_str = re.sub(r'&noindex=true', '', query_str)
                 e["url"] = u"/url{secure}/{netloc}/{url}{name}/?{base_url_query}{query_str}".format(
                     secure=secure, netloc=netloc, url=url, name=name, base_url_query=base_url_query, query_str=query_str
                 )
@@ -197,6 +199,11 @@ class WebDavTreeHandler(BaseHandler):
                 )
                 e["class"] = "fa-book"
                 ipynbs.append(e)
+                if file["path"].endswith("/index.ipynb"):
+                    if query:
+                        parsed_query = dict(parse_qsl(query))
+                    if (not query) or (not 'noindex' in parsed_query):
+                        self.redirect(e["url"])
             else:
                 e["url"] = u"{remote_url}{url}{name}".format(
                     remote_url=remote_url, url=url, name=name

@@ -41,8 +41,11 @@
       $('a[href="../"]').attr('href', "../"+location.search);
     }
     var urlParams = new URLSearchParams(location.search);
-    $('ol.breadcrumb li a').first().text(urlParams.get('base_name'));
+    var baseName = urlParams.get('base_name');
+    $('ol.breadcrumb li a').first().text(baseName);
     var newUrl = $('ol.breadcrumb li a').first().attr('href')+location.search;
-    $('ol.breadcrumb li a').first().attr('href', newUrl)
+    $('ol.breadcrumb li a').first().attr('href', newUrl);
+    var sourceUrl = $('ol.breadcrumb li a').last().attr('href').replace(new RegExp('^\/urls*\/([^\/]*)\/public\/([^?/]+)/*([^?]*)/*\?.*'), 'https://$1/shared/$2?dir=/'+baseName+'/$3');
+    $('ol.breadcrumb li a').last().after('<a class="download" href="'+sourceUrl+'"><i title="Download/import" class="fa fa-download"></i></a>')
   </script>
 {% endblock %}

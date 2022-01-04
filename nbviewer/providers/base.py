@@ -305,8 +305,8 @@ class BaseHandler(web.RequestHandler):
             return breadcrumbs
 
         for name in path.split("/"):
-            url = url_path_join(url, name)+"/"+base_url_query
-            breadcrumbs.append({"url": url, "name": name})
+            url = url_path_join(url, name)+"/"
+            breadcrumbs.append({"url": url+base_url_query, "name": name})
         return breadcrumbs
 
     def get_page_links(self, response):
@@ -499,6 +499,9 @@ class BaseHandler(web.RequestHandler):
         if self.request.uri in self.max_cache_uris:
             # if it's a link from the front page, cache for a long time
             expiry = self.cache_expiry_max
+
+        # FO: don't cache
+        expiry = 0
 
         if expiry > 0:
             self.set_header("Cache-Control", "max-age=%i" % expiry)

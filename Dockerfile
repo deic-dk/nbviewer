@@ -82,4 +82,4 @@ EXPOSE 8080
 USER $NB_USER
 
 EXPOSE 9000
-CMD ["python", "-m", "nbviewer", "--port=8080", "--localfiles=/home/sciencedata/"]
+CMD ["python", "-m", "nbviewer", "--port=8080", "--localfiles=/home/sciencedata/", "--rate-limit=600"]
