@@ -500,9 +500,6 @@ class BaseHandler(web.RequestHandler):
             # if it's a link from the front page, cache for a long time
             expiry = self.cache_expiry_max
 
-        # FO: don't cache
-        expiry = 0
-
         if expiry > 0:
             self.set_header("Cache-Control", "max-age=%i" % expiry)
 

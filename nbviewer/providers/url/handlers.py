@@ -49,7 +49,7 @@ class URLHandler(RenderingHandler):
             refer_url = self.request.headers.get("Referer", "").split("://")[-1]
             if refer_url.startswith(self.request.host + "/url"):
                 self.redirect(remote_url)
-                return
+                return remote_url, False
 
         parse_result = urlparse(remote_url)
 
@@ -105,7 +105,8 @@ class URLHandler(RenderingHandler):
     @cached
     async def get(self, secure, netloc, url):
         remote_url, public = await self.get_notebook_data(secure, netloc, url)
-        await self.deliver_notebook(remote_url, public, url)
+        if url.endswith(".ipynb"):
+            await self.deliver_notebook(remote_url, public, url)
 
 class WebDavTreeHandler(BaseHandler):
     """list files in a webdav directory"""
@@ -204,6 +205,7 @@ class WebDavTreeHandler(BaseHandler):
                         parsed_query = dict(parse_qsl(query))
                     if (not query) or (not 'noindex' in parsed_query):
                         self.redirect(e["url"])
+                        return
             else:
                 e["url"] = u"{remote_url}{url}{name}".format(
                     remote_url=remote_url, url=url, name=name
