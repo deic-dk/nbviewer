@@ -135,10 +135,10 @@
         unpinned: "slideOutUp"
       }
     })});
-    /*FO: fix relative links in notebook if any.*/
+    /*FO: Fix relative links in notebook if any.*/
     var nbGetStr = $('li .fa-window-close').first().closest('a')[0].search;
-    $('a:not([href^="/"]):not([href^="http://"]):not([href^="https://"])').each(function(el){href=$(this).attr('href'); $(this).attr('href', href+nbGetStr)});
-  </script>
+    $('a:not([href^="#"]):not([href^="/"]):not([href^="http://"]):not([href^="https://"])').each(function(el){href=$(this).attr('href'); $(this).attr('href', href+nbGetStr)});
+    </script>
 {% endblock extra_script %}
 
 
