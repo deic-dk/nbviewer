@@ -4,7 +4,10 @@
   {% if title or image or subtitle or text or show_input %}
   <header class="jumbotron masthead">
       {% if title and not image %}<h1><a href="/">{{ title}}</a></h1>{% endif %}
-      {% if image %}<h1><a href="/">{{ image | safe }}</a></h1>{% endif %}
+      {% if image %}<h1>
+      <a href="/">{{ image | safe }}</a>
+      <a target="_top" id="popout" href="https://sciencenotebooks.dk/"><img title="Pop out" src="/static/img/fullscreen.svg"></a>
+      </h1>{% endif %}
     {% if subtitle %}<h2>{{ subtitle | safe }}</h2>{% endif %}
     {% if text %}
     {{ text | markdown | safe }}
@@ -81,6 +84,9 @@
     };
     $(this).load(textUrl, doSomething(extraStuff));
   });
+  if(window.location!==window.parent.location){
+    $('#popout').show();
+  }
   </script>
 
 {% endblock body %}
