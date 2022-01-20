@@ -75,8 +75,9 @@
     };
   };
   $('p.marketing-byline[type="folder"]').each(function(){
-    var target = $(this).attr('url');
-    var textUrl = target+"description.txt";
+    var url = $(this).attr('url').replace(/\/public\//, "/shared/");
+    url = url.replace(/\/+$/, "");
+    var textUrl = url+"?files=description.txt&download";
     var oldText = $(this).text();
     var extraStuff = {
         item: $(this),
@@ -85,7 +86,8 @@
     $(this).load(textUrl, doSomething(extraStuff));
   });
   if(window.location!==window.parent.location){
-    $('#popout').show();
+    var popout = document.getElementById("popout");
+    popout.style.display = "block";
   }
   </script>
 
