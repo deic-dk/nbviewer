@@ -25,31 +25,39 @@ import os
 import sys
 import re
 import urllib.parse
+from requests.utils import requote_uri
 
 class URLHandler(RenderingHandler):
     """Renderer for /url or /urls"""
 
     async def get_notebook_data(self, secure, netloc, url):
+
         proto = "http" + secure
         netloc = url_unescape(netloc)
+        url = url_unescape(url)
 
-        remote_url = u"{}://{}/{}".format(proto, netloc, quote(url))
+        self.log.warn("URL: %s, netloc: %s", url, netloc, exc_info=True)
 
-        if "?" in self.request.uri:
-            link, query = self.request.uri.rsplit("?", 1)
+        if "/?" in url:
+            link, query = url.rsplit("/?", 1)
         else:
-            query = ""
+            query = None
+            link = url
+
+        remote_url = u"{}://{}/{}".format(proto, netloc, quote(link))
 
         if query:
-            remote_url = remote_url + "?" + query
+            remote_url = remote_url + "?" + requote_uri(query)
         if not url.endswith(".ipynb"):
             # this is how we handle relative links (files/ URLs) in notebooks
             # if it's not a .ipynb URL and it is a link from a notebook,
-            # redirect to the original URL rather than trying to render it as a notebook
+            # redirect to the original URL rather than try to render it as a notebook
             refer_url = self.request.headers.get("Referer", "").split("://")[-1]
-            if refer_url.startswith(self.request.host + "/url"):
+            accept = self.request.headers.get("Accept", "").split("://")[-1]
+            if refer_url.startswith(self.request.host + "/url") or not "text/html" in accept:
+                self.log.warn("Redirecting: %s, accept: %s", remote_url, accept, exc_info=True)
                 self.redirect(remote_url)
-                return remote_url, False
+                return remote_url, False, False
 
         parse_result = urlparse(remote_url)
 
@@ -72,12 +80,14 @@ class URLHandler(RenderingHandler):
         except Exception as e:
             self.log.error(e)
 
-        return remote_url, public
+        self.log.warn("remote_url: %s", remote_url, exc_info=True)
+        return remote_url, public, True
 
     async def deliver_notebook(self, remote_url, public, url):
 
-        bare_url = re.sub(r'\?.*$', '', remote_url)
-        response = await self.fetch(bare_url)
+        #bare_url = re.sub(r'\?.*$', '', remote_url)
+        #response = await self.fetch(bare_url)
+        response = await self.fetch(remote_url)
 
         try:
             nbjson = response_text(response, encoding="utf-8")
@@ -104,8 +114,9 @@ class URLHandler(RenderingHandler):
 
     @cached
     async def get(self, secure, netloc, url):
-        remote_url, public = await self.get_notebook_data(secure, netloc, url)
-        if url.endswith(".ipynb"):
+        remote_url, public, is_notebook = await self.get_notebook_data(secure, netloc, url)
+        self.log.warn("delivering notebook: %s", remote_url, exc_info=True)
+        if is_notebook:
             await self.deliver_notebook(remote_url, public, url)
 
 class WebDavTreeHandler(BaseHandler):
