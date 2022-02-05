@@ -156,6 +156,36 @@
   {% endblock footer %}
 {% endif %}
 
+<div class="loader"><div class="loading"></div></div>
+
+  <style>
+    .loader {
+      top: 50%;
+      left: 50%;
+      position: absolute;
+      transform: translate(-50%, -50%);
+    }
+    .loading {
+      border: 2px solid #ccc;
+      border-top-color: rgb(204, 204, 204);
+      border-left-color: rgb(204, 204, 204);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border-top-color: #296eaa8c;
+      border-left-color: #296eaa99;
+      animation: spin 1s infinite ease-in;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
   <script src="{{ static_url("components/bootstrap/js/bootstrap.min.js") }}"></script>
   <script src="{{ static_url("components/headroom.js/dist/headroom.min.js") }}"></script>
   <script src="{{ static_url("components/headroom.js/dist/jQuery.headroom.min.js") }}"></script>
@@ -189,6 +219,12 @@
         $("body").toggleClass("scrolled", w.scrollTop() > 0);
       });
     });
+  </script>
+  <script>
+  $(document).ready(function(){
+      $('.loader').hide();
+    });
+  $('a[href^="/"]').click(function(){$('.loader').show();});
   </script>
 
   <!--NEW RELIC Stop Perf Measurement-->
