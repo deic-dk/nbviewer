@@ -12,3 +12,6 @@ statsd
 tornado>=6.0
 requests
 webdavclient3
+ipython_genutils
+pathlib2
+jinja2==3.0

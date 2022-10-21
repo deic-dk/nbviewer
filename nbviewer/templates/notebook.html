@@ -109,7 +109,9 @@
           document.body.appendChild(scriptElement);
         }
 
-        document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+        // This tries to load fonts from w.g. https://sciencenotebooks.sciencedata.dk/urls/sciencedata.dk/public/6e3ed434c0fa43df906ce2b6d1ba9fc6/analyzing_hurricanes/@jupyter-widgets/html-manager/dist/1551f4f60c37af51121f.woff2
+        // and we don't seem to need it.
+        //document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
       }());
     </script>
   {% endblock ipywidgets %}
