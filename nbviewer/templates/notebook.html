@@ -27,9 +27,11 @@
 -->
   {{ layout.head_icon(download_url, "Download notebook to your local hard drive", "download", True) }}
   {% if import_url %}
-    {{ layout.head_icon(import_url, "Import notebook to your ScienceData", "cloud-download", False) }}
+    {{ layout.head_icon(import_url, "Import notebook to ScienceData", "cloud-download", False) }}
   {% endif %}
-  {{ layout.head_icon(close_url, "Close notebook", "window-close", False) }}
+  {% if close_url %}
+    {{ layout.head_icon(close_url, "Close notebook", "window-close", False) }}
+  {% endif %}
 {% endblock %}
 
 

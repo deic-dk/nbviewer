@@ -18,10 +18,12 @@
   </li>
 {%- endmacro %}
 
-
 {% macro link_breadcrumbs(crumbs) -%}
   {% if crumbs %}
   <ol class="breadcrumb">
+  {% if provider_label %}
+    <b>{{ provider_label }}</b>:&nbsp;
+  {% endif %}
     {% for crumb in crumbs %}
       <li>
         <a href="{{ from_base(crumb['url']) }}">{{crumb['name']}}</a>
@@ -221,9 +223,9 @@
     });
   </script>
   <script>
-  $(document).ready(function(){
-      $('.loader').hide();
-    });
+  $(window).on('pageshow', function(){
+  	$('.loader').hide();
+  })
   $('a[href^="/"]').click(function(){$('.loader').show();});
   </script>
 

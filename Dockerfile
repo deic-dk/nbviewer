@@ -32,7 +32,7 @@ RUN python3 setup.py build && \
 
 # Now define the runtime image
 FROM python:3.7-buster
-LABEL maintainer="ScienceData Project <cloud@deic.dk>"
+LABEL maintainer="ScienceData Project <support@sciencedata.dk>"
 LABEL vendor="sciencedata.dk"
 LABEL version="1.0"
 LABEL description="Debian/Python for deployment/integration of Jupyter nbviewer on sciencedata.dk"

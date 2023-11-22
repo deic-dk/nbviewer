@@ -8,6 +8,7 @@ import json
 import mimetypes
 import os
 import re
+import urllib.parse
 
 from tornado import web
 from tornado.escape import url_unescape
@@ -410,6 +411,14 @@ class GitHubBlobHandler(GithubClientMixin, RenderingHandler):
             except Exception as e:
                 self.log.error("Failed to decode notebook: %s", raw_url, exc_info=True)
                 raise web.HTTPError(400)
+            ##
+            # ScienceData
+            download_url = re.sub(r'/public/([^/]+)/(.+\.ipynb)\?*.*$', r'/shared/\1?files=\2&download', raw_url)
+            import_url = 'https://sciencedata.dk/index.php/apps/importer/importer.php?url='+urllib.parse.quote(urllib.parse.quote(raw_url, safe="/:#?"), safe="")
+            close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)
+            close_url = re.sub(r'/tree/master/*$', r'/', close_url)
+            close_url = re.sub(r'/blob/master/*$', r'/', close_url)
+            ##
 
             # Explanation of some kwargs passed into `finish_notebook`:
             # provider_url:
@@ -423,6 +432,8 @@ class GitHubBlobHandler(GithubClientMixin, RenderingHandler):
                 raw_url,
                 provider_url=blob_url,
                 executor_url=executor_url,
+                import_url=import_url,
+                close_url=close_url,
                 breadcrumbs=breadcrumbs,
                 msg="file from GitHub: %s" % raw_url,
                 public=True,
