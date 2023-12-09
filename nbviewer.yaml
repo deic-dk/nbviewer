@@ -37,6 +37,8 @@ spec:
         runAsGroup: 100
         fsGroup: 100
         fsGroupChangePolicy: Always
+      imagePullSecrets:
+      - name: regcred
       containers:
       - args:
         env:
@@ -47,6 +49,7 @@ spec:
         - name: MEMCACHIER_SERVERS
           value: nbcache:11211
         image: sciencedata/nbviewer_sciencedata:latest
+        imagePullPolicy: "IfNotPresent"
         name: nbviewer
         securityContext:
           capabilities:
