@@ -45,14 +45,18 @@
       <div class="marketing">
         <ul class="thumbnails example-sites">
           {% for link in section.links %}
+          {% if link.target %}
             <li class="col-md-4">
               <a class="thumbnail" href="{{ from_base(link.target) }}">
               <p class="marketing-byline" url="{{ from_base(link.url) }}" type={{link.type}}>{{link.text}}</p>
-               <object data="{{ link.img }}" type="image/png" height="96px">
-                  <img src="{{ static_url("/img/folder-o.png") }}" height="96px" />
-                </object>
+              {% if link.target %}
+                <img src="{{ link.img }}" height="112px" />
+              {% else %}
+                <img src="{{ static_url("/img/folder-o.png") }}" height="96px" />
+              {% endif %}
               </a>
             </li>
+          {% endif %}
           {% endfor %}
         </ul>
       </div>
@@ -62,6 +66,9 @@
   <style>
     .thumbnail {
       text-align: center;
+    }
+    a.thumbnail > img {
+      max-width: 112px;
     }
     .row {
       display: none;

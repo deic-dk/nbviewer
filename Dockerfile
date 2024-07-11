@@ -48,9 +48,8 @@ RUN apt-get update \
  && apt-get install -yq --no-install-recommends \
     ca-certificates \
     libcurl4 \
-    git \
     apt-utils rsyslog openssh-client net-tools inetutils-tools curl \
-    psmisc vim pciutils dkms vlan unicode-data gnupg git cron \
+    psmisc vim pciutils dkms vlan unicode-data gnupg cron \
     apt-transport-https wget jq nfs-common iputils-ping traceroute sudo \
     # Slim down image
     && apt-get clean autoclean \
@@ -59,7 +58,6 @@ RUN apt-get update \
     && rm -rf /usr/share/man/* /usr/share/groff/* /usr/share/info/* \
     && find /usr/share/doc -depth -type f ! -name copyright -delete \
     && rm -rf /var/lib/apt/lists/*
-
 
 COPY --from=builder /wheels /wheels
 RUN python3 -mpip install --no-cache /wheels/*
@@ -82,4 +80,4 @@ EXPOSE 8080
 USER $NB_USER
 
 EXPOSE 9000
-CMD ["python", "-m", "nbviewer", "--port=8080", "--localfiles=/home/sciencedata/", "--rate-limit=600", "--no-cache", "--cache-expiry-min=10", "--cache-expiry-max=20"]
+CMD ["python", "-m", "nbviewer", "--port=8080", "--localfiles=/home/sciencedata/", "--rate-limit=600", "--no-cache", "--cache-expiry-min=1", "--cache-expiry-max=2"]

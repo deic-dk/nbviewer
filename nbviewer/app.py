@@ -328,9 +328,9 @@ class NBViewer(Application):
     @default("max_cache_uris")
     def _load_max_cache_uris(self):
         max_cache_uris = {""}
-        for section in self.frontpage_setup["sections"]:
-            for link in section["links"]:
-                max_cache_uris.add("/" + link["target"])
+        #for section in self.frontpage_setup["sections"]:
+        #    for link in section["links"]:
+        #        max_cache_uris.add("/" + link["target"])
         return max_cache_uris
 
     mc_threads = Int(

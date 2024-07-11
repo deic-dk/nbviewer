@@ -14,6 +14,8 @@ from .providers.base import format_prefix
 from .utils import transform_ipynb_uri
 from .utils import url_path_join
 
+import requests
+
 # -----------------------------------------------------------------------------
 # Handler classes
 # -----------------------------------------------------------------------------
@@ -31,6 +33,17 @@ class IndexHandler(BaseHandler):
     """Render the index"""
 
     def render_index_template(self, **namespace):
+        # Refresh from sciencedata
+        sections = requests.get("https://sciencedata.dk/remote.php/notebooks").json()
+        # check if the JSON has a 'sections' field, otherwise assume it is just a list of sessions,
+        # and provide the defaults of the other fields
+        if "sections" not in self.frontpage_setup:
+            self.frontpage_setup = {
+                "title": "ScienceNotebooks",
+                "subtitle": "Scientific Jupyter notebooks - shared",
+                "show_input": True,
+                "sections": sections,
+            }
         return self.render_template(
             "index.html",
             title=self.frontpage_setup.get("title", None),

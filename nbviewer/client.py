@@ -56,7 +56,8 @@ class NBViewerAsyncHTTPClient(object):
             request.user_agent = "Tornado-Async-Client"
 
         # The future which will become the response upon awaiting.
-        response_future = asyncio.ensure_future(self.smart_fetch(request))
+        #response_future = asyncio.ensure_future(self.smart_fetch(request))
+        response_future = asyncio.ensure_future(self.client.fetch(request))
 
         return response_future
 

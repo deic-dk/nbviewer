@@ -496,9 +496,9 @@ class BaseHandler(web.RequestHandler):
             min(120 * request_time, self.cache_expiry_max), self.cache_expiry_min
         )
 
-        if self.request.uri in self.max_cache_uris:
-            # if it's a link from the front page, cache for a long time
-            expiry = self.cache_expiry_max
+        #if self.request.uri in self.max_cache_uris:
+        #    # if it's a link from the front page, cache for a long time
+        #    expiry = self.cache_expiry_max
 
         if expiry > 0:
             self.set_header("Cache-Control", "max-age=%i" % expiry)
