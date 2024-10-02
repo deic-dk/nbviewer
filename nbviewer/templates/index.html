@@ -6,10 +6,13 @@
     <span class="import_external" title="View/browse notebooks from external sources">
       <img src="/static/img/import_external.png" width="24px" />
     </span>
+    <span class="login_sciencedata" title="Log in to manage your uploads">
+      <a href="https://sciencedata.dk/?redirect_url=/apps/user_pods/redirect.php"><i class="fa fa-fw fa-sign-in"></i></a>
+    </span>
       {% if title and not image %}<h1><a href="/">{{ title}}</a></h1>{% endif %}
       {% if image %}<h1>
       <a href="/">{{ image | safe }}</a>
-      <a target="_top" id="popout" href="https://sciencenotebooks.dk/"><img title="Pop out" src="/static/img/fullscreen.svg"></a>
+      <a target="_top" id="popout" href="{{url}}"><img title="Pop out" src="/static/img/fullscreen.svg"></a>
       </h1>{% endif %}
     {% if subtitle %}<h2>{{ subtitle | safe }}</h2>{% endif %}
     {% if text %}
@@ -39,29 +42,27 @@
   </header>
   {% endif %}
 
+  <div class="sections">
   {% for section in sections %}
-    <section>
-      <h3 class="section-heading">{{section.header}}</h3>
+    <div class="section">
+      <a class="notebooks_url header" href="{{ from_base(section.target) }}">
+        <h3 class="section-heading">{{section.filename}}</h3>
+      </a>
       <div class="marketing">
-        <ul class="thumbnails example-sites">
-          {% for link in section.links %}
-          {% if link.target %}
-            <li class="col-md-4">
-              <a class="thumbnail" href="{{ from_base(link.target) }}">
-              <p class="marketing-byline" url="{{ from_base(link.url) }}" type={{link.type}}>{{link.text}}</p>
-              {% if link.target %}
-                <img src="{{ link.img }}" height="112px" />
+          {% if section.url %}
+              <p class="marketing-byline">{{ section.text | markdown | safe }}</p>
+              <a class="notebooks_url thumbnail" href="{{ from_base(section.target) }}">
+              {% if section.img %}
+                <img src="{{ section.img }}" height="112px" />
               {% else %}
                 <img src="{{ static_url("/img/folder-o.png") }}" height="96px" />
               {% endif %}
               </a>
-            </li>
           {% endif %}
-          {% endfor %}
-        </ul>
       </div>
-    </section>
+    </div>
   {% endfor %}
+  </div>
 
   <style>
     .thumbnail {
@@ -80,8 +81,16 @@
       opacity: 0.4;
       cursor: pointer;
     }
+    .login_sciencedata {
+      position: absolute;
+      left: 50px;
+    }
+    .login_sciencedata i {
+      color: #989898;
+      font-size: 24px;
+    }
     @media(max-width: 768px) and (max-height: 1024px), (max-height: 768px) and (max-width: 1024px){
-      .import_external {
+      .import_external, .login_sciencedata {
         display: none;
       }
     }
@@ -100,17 +109,6 @@
       extraStuff.item.html(newText);
     };
   };
-  $('p.marketing-byline[type="folder"]').each(function(){
-    var url = $(this).attr('url').replace(/\/public\//, "/shared/");
-    url = url.replace(/\/+$/, "");
-    var textUrl = url+"?files=description.txt&download";
-    var oldText = $(this).text();
-    var extraStuff = {
-        item: $(this),
-        oldText: oldText
-    };
-    $(this).load(textUrl, doSomething(extraStuff));
-  });
   if(window.location!==window.parent.location){
     var popout = document.getElementById("popout");
     popout.style.display = "block";

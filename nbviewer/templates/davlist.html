@@ -30,6 +30,16 @@
               <i class="fa fa-fw {{entry.class}}"></i>
               {{entry.name}}
               </a>
+              {% if path != '' %}
+                {% set full_path = base_name + '/' + path %}
+                {% set full_name = path + '/' + entry.name %}
+              {% else %}
+                {% set full_path = base_name %}
+                {% set full_name = entry.name %}
+              {% endif %}
+              {% if full_path+'/'+entry.name in mynotebooks %}
+                <i class="fa fa-fw fa-trash delete_my_notebook" title="Delete/unpublish this notebook" filename="{{full_name}}" section="{{base_name}}"></i>
+              {% endif %}
           </td>
         </tr>
         {% endif %}
@@ -46,6 +56,29 @@
     var newUrl = $('ol.breadcrumb li a').first().attr('href')+location.search;
     $('ol.breadcrumb li a').first().attr('href', newUrl);
     var sourceUrl = $('ol.breadcrumb li a').last().attr('href').replace(new RegExp('^\/urls*\/([^\/]*)\/public\/([^?/]+)/*([^?]*)/*\?.*'), 'https://$1/shared/$2?dir=/'+baseName+'/$3');
-    $('ol.breadcrumb li a').last().after('<a class="download" href="'+sourceUrl+'"><i title="Download/import" class="fa fa-download"></i></a>')
+    $('ol.breadcrumb li a').last().after('<a class="download" href="'+sourceUrl+'"><i title="Download/import" class="fa fa-download"></i></a>');
+    $('.delete_my_notebook').click(function(ev){
+      var filename = $(ev.target).attr('filename');
+      var section = $(ev.target).attr('section');
+      $.ajax({
+        url: 'https://sciencedata.dk/remote.php/notebooks',
+        async: false,
+        data: {
+          action: 'delete',
+          filename: filename,
+          section: section
+        },
+        type: 'GET',
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function(data) {
+          $(ev.target).parent().parent().remove();
+        },
+        error: function(data) {
+          alert('ERROR: Could not delete notebook.');
+        },
+      });
+    });
   </script>
 {% endblock %}

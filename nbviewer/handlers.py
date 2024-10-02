@@ -15,6 +15,7 @@ from .utils import transform_ipynb_uri
 from .utils import url_path_join
 
 import requests
+import json
 
 # -----------------------------------------------------------------------------
 # Handler classes
@@ -34,15 +35,18 @@ class IndexHandler(BaseHandler):
 
     def render_index_template(self, **namespace):
         # Refresh from sciencedata
-        sections = requests.get("https://sciencedata.dk/remote.php/notebooks").json()
-        # check if the JSON has a 'sections' field, otherwise assume it is just a list of sessions,
+        req = requests.get("https://sciencedata.dk/remote.php/notebooks")
+        sectionsJson = req.text
+        sections = json.loads(sectionsJson)
+        req.close()
+        # check if the JSON has a 'sections' field, otherwise assume it is just a list of sections,
         # and provide the defaults of the other fields
         if "sections" not in self.frontpage_setup:
             self.frontpage_setup = {
                 "title": "ScienceNotebooks",
                 "subtitle": "Scientific Jupyter notebooks - shared",
                 "show_input": True,
-                "sections": sections,
+                "sections": sections
             }
         return self.render_template(
             "index.html",
@@ -51,7 +55,8 @@ class IndexHandler(BaseHandler):
             image=self.frontpage_setup.get("image", None),
             text=self.frontpage_setup.get("text", None),
             show_input=self.frontpage_setup.get("show_input", True),
-            sections=self.frontpage_setup.get("sections", []),
+            sections=self.frontpage_setup.get("sections", {}),
+            url=self.request.full_url(),
             noheader=True,
             **namespace
         )

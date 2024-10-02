@@ -26,6 +26,8 @@ import sys
 import re
 import urllib.parse
 from requests.utils import requote_uri
+import requests
+import json
 
 class URLHandler(RenderingHandler):
     """Renderer for /url or /urls"""
@@ -101,7 +103,7 @@ class URLHandler(RenderingHandler):
         download_url = re.sub(r'/public/([^/]+)/(.+\.ipynb)\?*.*$', r'/shared/\1?files=\2&download', remote_url)
         webdav_url = re.sub(r'(\.ipynb)\?*.*$', r'\1', remote_url)
         import_url = 'https://sciencedata.dk/index.php/apps/importer/importer.php?url='+urllib.parse.quote(urllib.parse.quote(webdav_url, safe="/:#?"), safe="")
-        close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)+'&noindex=true'
+        close_url = re.sub(r'/[^/]+\.ipynb(\?*.*)$', r'/\1', self.request.uri)+('&' if '?' in self.request.uri else '?')+'noindex=true'
         await self.finish_notebook(
             nbjson,
             download_url=download_url,
@@ -170,9 +172,23 @@ class WebDavTreeHandler(BaseHandler):
         files = []
         self.log.warn("URL: %s", url, exc_info=True)
         files = webdav_client.list(url.strip("/")+"/", get_info=True)
-        self.log.warn("Listed: %s", files, exc_info=True)
+        self.log.warn("Listed sections: %s", files, exc_info=True)
         #if(len(files)>0):
         #    files.pop(0)
+        # If logged in on sciencedata and accessing this via notebooks.sciencedata.dk,
+        # a session cookie will be set. We use this for getting the list of owned/published notebooks
+        mynotebooks = []
+        sciencedata_session_cookie = os.environ["SD_SESSION_COOKIE"]
+        sciencedata_session_cookie_val = self.get_cookie(sciencedata_session_cookie)
+        cookies = {sciencedata_session_cookie: sciencedata_session_cookie_val}
+        self.log.warn("Cookie: %s: %s", sciencedata_session_cookie, sciencedata_session_cookie_val, exc_info=True)
+        req = requests.get("https://sciencedata.dk/remote.php/notebooks?mynotebooks=true", cookies=cookies)
+        nbsJson = req.text
+        mynotebooks = json.loads(nbsJson)
+        req.close()
+        self.log.warn("Listed my notebooks: %s", mynotebooks, exc_info=True)
+
+        base_name = self.get_argument("base_name", None)
 
         if not base_url:
             base_url = "/"+url
@@ -196,6 +212,8 @@ class WebDavTreeHandler(BaseHandler):
             e = {}
             name = os.path.basename(file["path"].strip("/"))
             e["name"] = name
+            if name in {'.checkpoints', 'cover.png', 'description.txt'}:
+                continue
             if file["isdir"]:
                 query_str = re.sub(r'&noindex=true', '', query_str)
                 e["url"] = u"/url{secure}/{netloc}/{url}{name}/?{base_url_query}{query_str}".format(
@@ -231,9 +249,17 @@ class WebDavTreeHandler(BaseHandler):
         html = self.render_treelist_template(
             entries=entries,
             breadcrumbs=breadcrumbs,
-            url=url
+            url=url,
+            path=path,
+            mynotebooks=mynotebooks,
+            base_name=base_name
         )
         await self.cache_and_finish(html)
+
+    @cached
+    async def post(self, secure, netloc, url):
+        self.get(secure, netloc, url)
+
 
 def default_handlers(handlers=[], **handler_names):
     """Tornado handlers"""
