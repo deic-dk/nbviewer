@@ -145,7 +145,7 @@
     var nbAel = $('li .fa-window-close').first().closest('a');
     var nbGetStr = "";
     if(nbAel.length){
-      var nbGetStr = nbAStr[0].search;
+      var nbGetStr = nbAel[0].search;
       $('a:not([href^="#"]):not([href^="/"]):not([href^="http://"]):not([href^="https://"])').each(function(el){
         href=$(this).attr('href'); $(this).attr('href', href+nbGetStr);
         });
